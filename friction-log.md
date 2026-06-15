@@ -1,0 +1,1 @@
+Day 1: Did all design work in a doc, no code. Felt slower than expected — I kept wanting to skip to building. Notable: had to research ATS keyword behavior to make defensible decisions about the grading logic. That research changed my design.
