@@ -1,0 +1,28 @@
+export const STOPWORDS = new Set([
+  'the',
+  'and',
+  'for',
+  'with',
+  'you',
+  'our',
+  'will',
+  'have',
+  'this',
+  'that',
+  'from',
+  'your',
+  'are',
+  'was',
+  'been',
+  'can',
+  'all',
+  'any',
+  'not',
+  'but',
+
+  // Prepositions and connectors (added Day 3 after finding "across" in output)
+  'across', 'throughout', 'within', 'alongside', 'toward', 'towards',
+  'beyond', 'among', 'between', 'during', 'before', 'after',
+  'above', 'below', 'into', 'onto', 'upon', 'against',
+  'around', 'through', 'over', 'under',
+]);

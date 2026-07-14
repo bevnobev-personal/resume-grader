@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { Command } from 'commander';
+import { compareResumeToJd } from './compare.js';
 
 const program = new Command();
 
@@ -28,7 +29,8 @@ program
     }
     const resumeContent = readFileSync(options.resume, 'utf-8');
 
-    console.log(jdContent.slice(0, 200));
+    const result = compareResumeToJd(jdContent, resumeContent);
+    console.log(JSON.stringify(result, null, 2));
   });
 
 program.parse();
