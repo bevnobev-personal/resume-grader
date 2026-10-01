@@ -18,7 +18,7 @@
     "natural": "^8.1.1"
   },
   "devDependencies": {
-    "@types/natural": "^5.1.5",
+    "@types/natural": "^6.0.1",
     "@types/node": "^25.9.3",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
