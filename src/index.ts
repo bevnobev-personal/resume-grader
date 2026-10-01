@@ -1,6 +1,7 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { compareResumeToJd } from './compare.js';
+import { InputFileError, readTextInput } from './input-file.js';
 
 const program = new Command();
 
@@ -13,24 +14,24 @@ program
   .requiredOption('--jd <path>', 'job description file path, or "-" for stdin')
   .requiredOption('--resume <path>', 'path to resume file')
   .action((options) => {
-    let jdContent: string;
-    if (options.jd === '-') {
-      jdContent = readFileSync(0, 'utf-8');
-    } else if (!existsSync(options.jd) || !statSync(options.jd).isFile()) {
-      console.error(`Error: job description file not found: ${options.jd}`);
-      process.exit(1);
-    } else {
-      jdContent = readFileSync(options.jd, 'utf-8');
-    }
+    try {
+      const jdContent =
+        options.jd === '-'
+          ? readFileSync(0, 'utf-8')
+          : readTextInput(options.jd, 'Job description');
+      const resumeContent = readTextInput(options.resume, 'Resume');
 
-    if (!existsSync(options.resume) || !statSync(options.resume).isFile()) {
-      console.error(`Error: resume file not found: ${options.resume}`);
-      process.exit(1);
+      const result = compareResumeToJd(jdContent, resumeContent);
+      console.log(JSON.stringify(result, null, 2));
+    } catch (error) {
+      // Input problems get a plain, actionable message. Anything else is a
+      // genuine bug, so we let it crash with its stack trace intact.
+      if (error instanceof InputFileError) {
+        console.error(error.message);
+        process.exit(1);
+      }
+      throw error;
     }
-    const resumeContent = readFileSync(options.resume, 'utf-8');
-
-    const result = compareResumeToJd(jdContent, resumeContent);
-    console.log(JSON.stringify(result, null, 2));
   });
 
 program.parse();
