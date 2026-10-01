@@ -73,15 +73,9 @@ describe('resume file validation', () => {
     expect(result.stderr).toContain(
       `${renamed} doesn't look like a plain text file. It may be a PDF or Word file that was renamed. Save it as plain text and try again.`,
     );
-  });
-
-  it('case 2: does not silently print an all-Gap report for a renamed PDF', () => {
-    const renamed = join(dir, 'renamed-pdf-2.txt');
-    writeFileSync(renamed, PDF_BYTES);
-
-    const result = runCli(['--jd', jd, '--resume', renamed]);
-
-    // The dangerous old behaviour: a confident-looking report built from garbage.
+    // The dangerous old behaviour: a confident-looking report built from
+    // garbage. Asserted here rather than in its own test, because every
+    // extra test means another slow child process.
     expect(result.stdout).not.toContain('"keyword"');
   });
 
