@@ -65,7 +65,7 @@ export function looksLikePlainText(bytes: Uint8Array): boolean {
 export function readTextInput(path: string, label: InputLabel): string {
   if (!existsSync(path) || !statSync(path).isFile()) {
     throw new InputFileError(
-      `Couldn't find ${path}. Check the file path and try again.`,
+      `Couldn't find ${path}.`,
     );
   }
 
