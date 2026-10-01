@@ -2,9 +2,11 @@
   "name": "resume-grader",
   "version": "1.0.0",
   "description": "A CLI tool that compares a resume against a job description",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
