@@ -1,0 +1,47 @@
+# Runs the type checker and the test suite automatically on GitHub.
+# "CI" is continuous integration: the project checks itself on every change,
+# so a problem is caught by the robot rather than by a human reviewer.
+name: CI
+
+# When to run. Pull requests are checked on every update; main is checked
+# directly so a merge that breaks something still shows up red.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # A job is one independent unit of work. We only need one.
+  check:
+    name: Typecheck and test
+    # The virtual machine GitHub spins up for us, fresh each run.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Copy the repository onto that machine. Without this the machine is empty.
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # Install Node. `cache: npm` saves the downloaded packages between runs,
+      # which makes later runs noticeably faster.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # `npm ci` ("clean install") installs the exact versions recorded in
+      # package-lock.json, unlike `npm install`, which may quietly upgrade
+      # things. That is what makes a CI run reproducible.
+      - name: Install dependencies
+        run: npm ci
+
+      # Does the TypeScript compiler accept the code? Catches type errors that
+      # the tests would never notice, because Vitest strips types without
+      # checking them.
+      - name: Check types
+        run: npm run typecheck
+
+      # Does the code actually behave correctly?
+      - name: Run tests
+        run: npm test

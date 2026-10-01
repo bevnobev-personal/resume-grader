@@ -1,3 +1,4 @@
 node_modules/
+dist/
 *-jd.txt
 platform.md
