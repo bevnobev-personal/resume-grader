@@ -1,0 +1,26 @@
+# Tells Dependabot, GitHub's dependency-update bot, what to watch. It does not
+# change anything on its own: it opens pull requests, which then go through CI
+# and branch protection like any other change.
+#
+# Starting with GitHub Actions only. Those are the dependencies that go stale
+# silently, because a tag like @v4 keeps working long after its runtime is
+# deprecated. npm updates can be added later as a second entry; they are left
+# out for now so the volume of pull requests stays small enough to actually read.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    # "/" means the repository root, where Dependabot looks for
+    # .github/workflows. It does not mean only files directly in the root.
+    directory: "/"
+    schedule:
+      interval: monthly
+    # Bundle every action update into one pull request instead of one each.
+    # With two actions that is a small difference; it stops being small as a
+    # workflow grows.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "ci"
