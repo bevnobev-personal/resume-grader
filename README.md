@@ -2,6 +2,97 @@
 
 A CLI tool that compares a resume against a job description
 
+## Requirements
+
+Node 24. Other versions may work, but 24 is what CI tests against.
+
+```bash
+npm ci
+```
+
+## Usage
+
+There is no installed `resume-grade` command yet — the package declares no
+`bin` entry, so it has to be run from the repository. Either run the
+TypeScript directly:
+
+```bash
+npx tsx src/index.ts --jd job-description.txt --resume resume.md
+```
+
+or compile once and run the output, which starts faster:
+
+```bash
+npm run build
+node dist/index.js --jd job-description.txt --resume resume.md
+```
+
+### Options
+
+| Option | Description |
+| --- | --- |
+| `--jd <path>` | Job description file, or `-` to read it from stdin. Required. |
+| `--resume <path>` | Resume file. Required. |
+| `-V`, `--version` | Print the version. |
+| `-h`, `--help` | Print usage. |
+
+Both files must be `.txt` or `.md`.
+
+### Reading the job description from stdin
+
+Useful when the posting is on your clipboard rather than in a file:
+
+```bash
+pbpaste | npx tsx src/index.ts --jd - --resume resume.md
+```
+
+A job description read this way skips the extension and content checks
+described below, because there is no file to inspect.
+
+## Output
+
+The 15 most frequent notable words in the job description, as JSON on stdout,
+with how often each appears in each document. Trimmed example:
+
+```json
+{
+  "keywords": [
+    { "keyword": "engineer",   "jdCount": 2, "resumeCount": 1, "status": "Underweight" },
+    { "keyword": "typescript", "jdCount": 2, "resumeCount": 1, "status": "Underweight" },
+    { "keyword": "build",      "jdCount": 1, "resumeCount": 1, "status": "Strong" },
+    { "keyword": "culture",    "jdCount": 1, "resumeCount": 0, "status": "Gap" }
+  ]
+}
+```
+
+| Status | Meaning |
+| --- | --- |
+| `Strong` | The resume uses the word at least as often as the job description. |
+| `Underweight` | The resume uses it, but fewer times than the job description. |
+| `Gap` | The resume does not use it at all. |
+
+Matching ignores case, skips common stopwords and words shorter than three
+characters, and compares word stems, so "engineering" in a job description
+counts a resume's "engineer" as a match.
+
+Counts are a blunt instrument: they measure vocabulary overlap, not whether
+the resume is any good. Treat `Gap` as "worth a second look", not as a defect.
+
+## Input requirements
+
+Both files must be plain text with a `.txt` or `.md` extension. Anything else
+exits with status `1` and an explanation rather than a misleading report:
+
+| Problem | Message |
+| --- | --- |
+| File does not exist | `Couldn't find <path>. Check the file path and try again.` |
+| Not plain text, e.g. a renamed PDF | `<path> doesn't look like a plain text file. It may be a PDF or Word file that was renamed. Save it as plain text and try again.` |
+| Extension is not `.txt` or `.md` | `Resume must be a .txt or .md file. Save or export it in one of those formats and try again.` |
+
+Exporting a PDF or Word resume to plain text first is the usual fix. A file is
+treated as binary if it contains a null byte, a control character other than
+whitespace, or bytes that are not valid UTF-8.
+
 ## Continuous integration
 
 [![CI](https://github.com/bevnobev-personal/resume-grader/actions/workflows/ci.yml/badge.svg)](https://github.com/bevnobev-personal/resume-grader/actions/workflows/ci.yml)
