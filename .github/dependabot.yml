@@ -2,10 +2,9 @@
 # change anything on its own: it opens pull requests, which then go through CI
 # and branch protection like any other change.
 #
-# Starting with GitHub Actions only. Those are the dependencies that go stale
-# silently, because a tag like @v4 keeps working long after its runtime is
-# deprecated. npm updates can be added later as a second entry; they are left
-# out for now so the volume of pull requests stays small enough to actually read.
+# Two ecosystems are watched: the actions used by .github/workflows, which go
+# stale silently because a tag like @v4 keeps working long after the runtime it
+# declares is removed, and the npm packages in package.json.
 version: 2
 
 updates:
@@ -24,3 +23,25 @@ updates:
           - "*"
     commit-message:
       prefix: "ci"
+
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      # Routine minor and patch upgrades arrive together as one pull request,
+      # because reviewing them individually is busywork. Major versions are
+      # deliberately left out of this group, so each one gets its own pull
+      # request: a major can change behaviour, and if it breaks the build the
+      # failure should point at a single package rather than a bundle.
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: "deps"
+      # Keeps dev-only upgrades distinguishable in the history, since they
+      # cannot affect anyone running the tool.
+      prefix-development: "deps-dev"
