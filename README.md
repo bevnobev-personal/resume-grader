@@ -12,20 +12,29 @@ npm ci
 
 ## Usage
 
-There is no installed `resume-grade` command yet — the package declares no
-`bin` entry, so it has to be run from the repository. Either run the
-TypeScript directly:
+The package installs a `resume-grade` command. From a clone, build it first,
+then link it onto your PATH:
+
+```bash
+npm run build
+npm link
+
+resume-grade --jd job-description.txt --resume resume.md
+```
+
+`npm link` is reversible with `npm unlink -g resume-grader`.
+
+The build step is required because the command points at `dist/index.js`. If
+`resume-grade` reports that the file is missing, the build has not been run.
+
+To run it without installing anything, execute the TypeScript directly:
 
 ```bash
 npx tsx src/index.ts --jd job-description.txt --resume resume.md
 ```
 
-or compile once and run the output, which starts faster:
-
-```bash
-npm run build
-node dist/index.js --jd job-description.txt --resume resume.md
-```
+This is slower to start, since it compiles on each run, but needs no build
+step — which is also why the tests use it.
 
 ### Options
 
