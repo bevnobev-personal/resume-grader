@@ -106,9 +106,17 @@ whitespace, or bytes that are not valid UTF-8.
 
 [![CI](https://github.com/bevnobev-personal/resume-grader/actions/workflows/ci.yml/badge.svg)](https://github.com/bevnobev-personal/resume-grader/actions/workflows/ci.yml)
 
-Every pull request, and every push to `main`, runs the TypeScript compiler and
-the test suite. The workflow lives in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
-and pins Node to 24 LTS.
+Every pull request, and every push to `main`, runs two jobs in parallel. The
+workflow lives in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) and
+pins Node to 24 LTS.
+
+- **Typecheck and test** — the TypeScript compiler, then the test suite.
+- **Package** — builds the tarball `npm publish` would upload, installs it into
+  a scratch project, and runs the resulting `resume-grade` command. The tests
+  run the CLI from source, so only this job can catch a packaging fault: a
+  missing shebang, a `bin` entry pointing at the wrong path, or `dist` left out
+  of the published files would all keep the tests green while the installed
+  command was broken.
 
 ### Running the same checks locally
 
@@ -125,6 +133,7 @@ Also available:
 ```bash
 npm run test:watch  # re-run affected tests as you edit
 npm run build       # compile to dist/
+npm pack            # build the tarball, as the Package job does
 ```
 
 ### How the tests are organised
