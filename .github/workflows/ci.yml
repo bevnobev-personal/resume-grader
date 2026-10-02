@@ -11,7 +11,8 @@ on:
   pull_request:
 
 jobs:
-  # A job is one independent unit of work. We only need one.
+  # A job is one independent unit of work, on its own machine. These two run in
+  # parallel and report as separate checks, so a failure says which half broke.
   check:
     name: Typecheck and test
     # The virtual machine GitHub spins up for us, fresh each run.
@@ -45,3 +46,55 @@ jobs:
       # Does the code actually behave correctly?
       - name: Run tests
         run: npm test
+
+  # The test suite above runs the CLI from source, so it cannot catch a broken
+  # package: a missing shebang, a bin entry pointing at the wrong path, or dist
+  # left out of the published files would all keep the tests green while
+  # `resume-grade` failed for anyone who installed it.
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # `npm pack` builds first, via the prepack script, and produces the exact
+      # tarball a publish would upload.
+      - name: Build the tarball
+        run: npm pack --pack-destination /tmp
+
+      # Install that tarball into an unrelated project, the way a user would,
+      # and check the installed command actually works.
+      - name: Install the tarball and run the installed command
+        run: |
+          mkdir /tmp/pkg-test && cd /tmp/pkg-test
+          npm init -y > /dev/null
+          npm install /tmp/resume-grader-*.tgz
+
+          printf 'Senior TypeScript engineer with testing experience.\n' > jd.txt
+          printf '# CV\n\nTypeScript engineer, testing tools.\n' > cv.md
+
+          # The command exists and runs.
+          ./node_modules/.bin/resume-grade --version
+
+          # It produces a report rather than crashing.
+          ./node_modules/.bin/resume-grade --jd jd.txt --resume cv.md > out.json
+          grep -q '"keyword"' out.json
+
+          # And it still fails correctly. `if` is used because the step would
+          # otherwise abort on the non-zero exit that is being asserted.
+          if ./node_modules/.bin/resume-grade --jd jd.txt --resume missing.txt 2> err.txt; then
+            echo "Expected a non-zero exit code for a missing file"
+            exit 1
+          fi
+          grep -q "Couldn't find" err.txt
