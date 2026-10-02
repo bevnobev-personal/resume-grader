@@ -3,8 +3,15 @@
   "version": "1.0.0",
   "description": "A CLI tool that compares a resume against a job description",
   "main": "dist/index.js",
+  "bin": {
+    "resume-grade": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
+    "prepack": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
